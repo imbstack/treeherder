@@ -9,8 +9,8 @@ from rest_framework.decorators import list_route
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 
-from treeherder.credentials.models import Credentials
 from treeherder.auth.backends import TaskclusterAuthenticationFailed
+from treeherder.credentials.models import Credentials
 from treeherder.webapp.api.serializers import UserSerializer
 
 logger = logging.getLogger(__name__)

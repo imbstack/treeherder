@@ -1,10 +1,8 @@
 import logging
-import re
 from hashlib import sha1
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from taskcluster.sync import Auth
 from taskcluster.utils import scope_match
 
