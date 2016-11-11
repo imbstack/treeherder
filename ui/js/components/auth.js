@@ -11,8 +11,8 @@
 treeherder.component("login", {
     template: `
         <span class="dropdown"
-              ng-if="user.loggedin">
-          <button id="logoutLabel" title="Logged in as: {{user.email}}" role="button"
+              ng-if="$ctrl.user.loggedin">
+          <button id="logoutLabel" title="Logged in as: {{$ctrl.user.email}}" role="button"
                   data-toggle="dropdown" data-target="#"
                   class="btn btn-view-nav btn-right-navbar nav-persona-btn">
             <div class="nav-user-icon">
@@ -22,25 +22,25 @@ treeherder.component("login", {
           </button>
           <ul class="dropdown-menu" role="menu" aria-labelledby="logoutLabel">
               <li>
-                <a ng-click="logout()">Logout</a>
+                <a ng-click="$ctrl.logout()">Logout</a>
               </li>
           </ul>
         </span>
 
         <a class="btn btn-view-nav btn-right-navbar nav-login-btn"
-           ng-if="!user.loggedin"
-           ng-click="login()">Login/Register</a>
+           ng-if="!$ctrl.user.loggedin"
+           ng-click="$ctrl.login()">Login/Register</a>
     `,
     bindings: {
+        // calls to the HTML which sets the user value in the $rootScope.
         onUserChange: "&"
     },
-    controller: ['$scope', '$location', '$window', 'localStorageService',
+    controller: ['$location', '$window', 'localStorageService',
         'ThUserModel', '$http', 'thUrl', '$timeout',
-        function ($scope, $location, $window, localStorageService,
+        function ($location, $window, localStorageService,
                   ThUserModel, $http, thUrl, $timeout) {
-            $scope.user = {};
-            // calls to the HTML which sets the user value in the $rootScope.
-            var onUserChange = this.onUserChange;
+            var ctrl = this;
+            ctrl.user = {};
             // "clears out" the user when it is detected to be logged out.
             var loggedOutUser = {is_staff: false, username: "", email: "", loggedin: false};
 
@@ -54,7 +54,7 @@ treeherder.component("login", {
                         var newUser = JSON.parse(e.newValue);
                         if (newUser && newUser.email) {
                             // User was saved to local storage. Use it.
-                            setLoggedIn(newUser);
+                            ctrl.setLoggedIn(newUser);
                         } else {
                             // This is a tiny hack.  :)
                             // Right after login, sometimes we get another
@@ -66,7 +66,7 @@ treeherder.component("login", {
                             // skip the logout.
                             var storedUser = localStorageService.get("user");
                             if (!storedUser || !storedUser.loggedin) {
-                                setLoggedOut();
+                                ctrl.setLoggedOut();
                             }
                         }
                     }, 0);
@@ -76,9 +76,9 @@ treeherder.component("login", {
             // Ask the back-end if a user is logged in on page load
             ThUserModel.get().then(function (currentUser) {
                 if (currentUser.email) {
-                    setLoggedIn(currentUser);
+                    ctrl.setLoggedIn(currentUser);
                 } else {
-                    setLoggedOut();
+                    ctrl.setLoggedOut();
                 }
             });
 
@@ -86,7 +86,7 @@ treeherder.component("login", {
              * Contact login.taskcluster to log the user in.  Opens a new tab
              * for the tc-login, which will get closed if it's successful.
              */
-            $scope.login = function () {
+            ctrl.login = function () {
                 var hash = encodeURIComponent("#");
                 var colon = encodeURIComponent(":");
                 var target = `${$location.protocol()}${colon}//${$location.host()}${colon}${$location.port()}/${hash}/login`;
@@ -101,23 +101,23 @@ treeherder.component("login", {
              * Contact Treeherder back-end to log the user out and invalidate
              * the session token.  Then updates the UI
              */
-            $scope.logout = function () {
+            ctrl.logout = function () {
                 $http.get(thUrl.getRootUrl("/auth/logout/"));
-                setLoggedOut();
+                ctrl.setLoggedOut();
             };
 
-            var setLoggedIn = function(newUser) {
+            ctrl.setLoggedIn = function(newUser) {
                 newUser.loggedin = true;
                 localStorageService.set("user", newUser);
-                _.extend($scope.user, newUser);
-                onUserChange({$event: {user: $scope.user}});
+                _.extend(ctrl.user, newUser);
+                ctrl.onUserChange({$event: {user: ctrl.user}});
 
             };
 
-            var setLoggedOut = function() {
+            ctrl.setLoggedOut = function() {
                 localStorageService.set("user", loggedOutUser);
-                _.extend($scope.user, loggedOutUser);
-                onUserChange({$event: {user: loggedOutUser}});
+                _.extend(ctrl.user, loggedOutUser);
+                ctrl.onUserChange({$event: {user: loggedOutUser}});
             };
         }]
 });
