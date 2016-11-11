@@ -150,7 +150,7 @@ treeherder.component("loginCallback", {
 
             // send a request from client side to TH server signed with TC
             // creds from login.taskcluster.net
-            $http.get(`${urlBase}api/auth/login/?host=${host}&port=${port}`,
+            $http.get(`${urlBase}api/auth/login/`,
                       {headers: {"oth": header.field}})
                 .then(function(resp) {
                     var user = resp.data;
@@ -158,7 +158,7 @@ treeherder.component("loginCallback", {
                     localStorageService.set("user", user);
                     $window.close();
                 }, function(data) {
-                    $scope.loginError = data.statusText;
+                    $scope.loginError = data.data.detail;
                 });
         }
     ]
