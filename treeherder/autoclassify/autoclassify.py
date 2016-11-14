@@ -30,7 +30,7 @@ def match_errors(job):
     logger.debug("match_errors")
 
     if job.autoclassify_status < Job.CROSSREFERENCED:
-        logger.error("Tried to autoclassify job %i without corssreferenced error lines" % job.id)
+        logger.error("Tried to autoclassify job %i without crossreferenced error lines" % job.id)
         return
 
     if job.autoclassify_status == Job.AUTOCLASSIFIED:
@@ -86,12 +86,12 @@ def update_db(job, matches, all_matched):
     classified_failures = {item.id: item for item in
                            ClassifiedFailure.objects.filter(
                                id__in=[match.classified_failure_id for _, match in matches])}
-    for _, match in matches:
+    for matcher, match in matches:
         classified_failure = classified_failures[match.classified_failure_id]
-        matches_by_error[match.text_log_error].add((match, classified_failure))
+        matches_by_error[match.text_log_error].add((matcher, match, classified_failure))
 
     for text_log_error, matches in matches_by_error.iteritems():
-        for ((matcher, match), classified_failure) in matches:
+        for (matcher, match, classified_failure) in matches:
             try:
                 TextLogErrorMatch.objects.create(
                     score=match.score,

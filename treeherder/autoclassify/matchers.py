@@ -97,10 +97,11 @@ class id_window(object):
                         .values_list('id', flat=True)[0])
 
         count = 0
-        while True:
+        while upper_cutoff > 0:
             count += 1
+            lower_cutoff = max(upper_cutoff - self.size, 0)
             window_queryset = query.filter(
-                text_log_error__id__range=(upper_cutoff - self.size, upper_cutoff))
+                text_log_error__id__range=(lower_cutoff, upper_cutoff))
             logger.debug("[time_window] Queryset: %s" % window_queryset.query)
             match = window_queryset.first()
             if match is not None:

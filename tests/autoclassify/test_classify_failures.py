@@ -7,6 +7,7 @@ from treeherder.autoclassify.tasks import autoclassify
 from treeherder.model.models import (BugJobMap,
                                      ClassifiedFailure,
                                      FailureMatch,
+                                     Job,
                                      JobNote,
                                      TextLogError,
                                      TextLogErrorMatch)
@@ -45,6 +46,9 @@ def test_classify_test_failure(jm,
              (test_line, {"message": "message2"})]
     test_error_lines, test_failure_lines = create_lines(test_job_2, lines)
 
+    test_job_2.autoclassify_status = Job.CROSSREFERENCED
+    test_job_2.save()
+
     do_autoclassify(jm, test_job_2, test_failure_lines, [PreciseTestMatcher])
 
     expected_classified = test_error_lines[:2], test_failure_lines[:2]
@@ -71,6 +75,9 @@ def test_no_autoclassify_job_success(jm,
              (test_line, {"message": "message2"})]
     test_error_lines, test_failure_lines = create_lines(test_job_2, lines)
 
+    test_job_2.autoclassify_status = Job.CROSSREFERENCED
+    test_job_2.save()
+
     do_autoclassify(jm, test_job_2, test_failure_lines, [PreciseTestMatcher], status="success")
 
     expected_classified = [], []
@@ -95,6 +102,9 @@ def test_autoclassify_update_job_classification(jm, failure_lines, classified_fa
     lines = [(test_line, {})]
     test_error_lines, test_failure_lines = create_lines(test_job_2, lines)
 
+    test_job_2.autoclassify_status = Job.CROSSREFERENCED
+    test_job_2.save()
+
     do_autoclassify(jm, test_job_2, test_failure_lines, [PreciseTestMatcher])
 
     assert JobNote.objects.filter(job=test_job_2).count() == 1
@@ -112,6 +122,9 @@ def test_autoclassify_no_update_job_classification(jm, test_job, test_job_2,
     TextLogError.objects.create(step=test_error_lines[0].step,
                                 line="Some error that isn't in the structured logs",
                                 line_number=2)
+
+    test_job_2.autoclassify_status = Job.CROSSREFERENCED
+    test_job_2.save()
 
     do_autoclassify(jm, test_job_2, test_failure_lines, [PreciseTestMatcher])
 
