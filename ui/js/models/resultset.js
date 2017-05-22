@@ -239,10 +239,18 @@ treeherder.factory('ThResultSetModel', ['$rootScope', '$http', '$location',
                     if (errorMsg === 'credentials must be given') {
                         errorMsg = 'Missing Taskcluster credentials! Please log out and back in again.';
                     }
-                    throw new Error(errorMsg);
+                    return $q.reject(new Error(errorMsg));
                 }
                 return $http.get(url).then(function (resp) {
                     let graph = resp.data;
+
+                    // Build a mapping of buildbot buildername to taskcluster tasklabel for bbb tasks
+                    let builderToTask = _.omit(_.invert(_.mapValues(graph, 'task.payload.buildername')), [undefined]);
+
+                    buildernames = _.map(buildernames, function(buildername) {
+                        return builderToTask[buildername] || buildername;
+                    });
+
                     let tclabels = _.intersection(buildernames, _.keys(graph));
                     let bbnames = _.difference(buildernames, tclabels);
                     return $q.all([
